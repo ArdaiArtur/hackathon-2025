@@ -5,7 +5,7 @@ use App\Domain\Repository\UserRepositoryInterface;
 use App\Domain\Entity\User;
 use PDO;
 
-class UserRepository implements UserRepositoryInterface
+class PdoUserRepository implements UserRepositoryInterface
 {
     private PDO $db;
 
