@@ -104,10 +104,48 @@ A solution with passing analysis and unit tests will receive extra points.
 ## Delivery details
 
 Participant:
-- Full name: ...
-- Email address: ...
+- Full name: Ardai Artur Sebastian
+- Email address:ardaiartur@gmail.com
 
 Features fully implemented:
-- ...
+- Page / Route
+Register /register
+(GET, POST)
+Login /login
+(GET, POST)
+Logout /logout
+(GET)
+Expenses – List /expenses
+(GET)
+Expenses – Add /expenses/create
+(GET)
+Expenses – Edit /expenses/{id}/edit
+(GET)
+Expenses – Delete /expenses/{id}/delete 
+(POST)
+Dashboard /
+(GET)
+Expenses - CSV Import (as part of Expenses - List page)
+
+Extra:
+Throughout the application:
+use prepared statements always when querying the DB.
+ensure a user may change/delete only his/her own expenses.
+Optimize the database schema:
+add the relevant table indexes given the implemented use cases. Ensure that the change to the database schema is provided as an incremental migration_*.sql file.
+Register user:
+using the proper password hashing function in PHP.
+implement a “password again” input for ensuring no password typos.
+make the register user form CSRF-proof.
+Login user:
+using the proper password verify function in PHP.
+prevent session fixation attacks.
+make the login user form CSRF-proof
+Categories and budgets per category:
+move categories and budget thresholds as configuration options defined in the .env file.
+Delete expense:
+show a success/failure message on the Expenses – List page, when redirecting after delete (flash message).
+CSV file upload:
+showing a success message at the top of the  Expenses – List when redirecting after import, containing the total number of imported expenses (flash message).
 
 Other instructions about setting up the application (if any): ...

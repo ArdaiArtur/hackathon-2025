@@ -22,8 +22,7 @@ class AuthController extends BaseController
 
     public function showRegister(Request $request, Response $response): Response
     {
-        // TODO: you also have a logger service that you can inject and use anywhere; file is var/app.log
-        $this->logger->info('Register page requested');
+        //$this->logger->info('Register page requested');
 
         if (isset($_SESSION['user_id'])) {
             return $response->withHeader('Location', '/')->withStatus(302);

@@ -26,13 +26,6 @@ class DashboardController extends BaseController
 
     public function index(Request $request, Response $response): Response
     {
-        // TODO: parse the request parameters
-        // TODO: load the currently logged-in user
-        // TODO: get the list of available years for the year-month selector
-        // TODO: call service to generate the overspending alerts for current month
-        // TODO: call service to compute total expenditure per selected year/month
-        // TODO: call service to compute category totals per selected year/month
-        // TODO: call service to compute category averages per selected year/month
 
         $userId = $_SESSION['user_id'];
         $year = (int)($request->getQueryParams()['year'] ?? (int)date('Y'));
