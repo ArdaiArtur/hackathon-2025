@@ -8,6 +8,7 @@ use App\Domain\Entity\Expense;
 use App\Domain\Entity\User;
 use App\Domain\Repository\ExpenseRepositoryInterface;
 use DateTimeImmutable;
+use Exception;
 use Psr\Http\Message\UploadedFileInterface;
 use Psr\Log\LoggerInterface;
 
@@ -41,7 +42,7 @@ class ExpenseService
         DateTimeImmutable $date,
         string $category,
     ): void {
-        $expense = new Expense(null, $userId, $date, $category, (int)($amount*100), $description);
+        $expense = new Expense(null, $userId, $date, $category, (int)($amount * 100), $description);
         $this->expenses->save($expense);
     }
 
@@ -60,7 +61,7 @@ class ExpenseService
         if ($expense->description !== $description) {
             $fields['description'] = $description;
         }
-        if ($expense->date != $date) { 
+        if ($expense->date != $date) {
             $fields['date'] = $date->format('Y-m-d H:i:s');
         }
         if ($expense->category !== $category) {
@@ -68,16 +69,28 @@ class ExpenseService
         }
 
         if (!empty($fields)) {
-            $this->expenses->update( $fields,$expense->id,);
+            $this->expenses->update($fields, $expense->id,);
         }
     }
 
-    public function importFromCsv(User $user, UploadedFileInterface $csvFile): int
+    public function importFromCsv(int $userId, UploadedFileInterface $csvFile): int
     {
-        // TODO: process rows in file stream, create and persist entities
-        // TODO: for extra points wrap the whole import in a transaction and rollback only in case writing to DB fails
+        $csvContent = $csvFile->getStream()->getContents();
+        $lines = explode("\n", trim($csvContent));
+        $columns = ['date', 'amount', 'description', 'category'];
 
-        return 0; // number of imported rows
+
+        $imported = 0;
+
+        for ($i = 0; $i < count($lines); $i++) {
+
+            $row = str_getcsv($lines[$i]);
+            $data = array_combine($columns, $row);
+            $this->create($userId, (float)$data['amount'], $data['description'], new DateTimeImmutable($data['date']), $data['category']);
+            $imported++;
+        }
+
+        return $imported;
     }
 
     public function find(int $id): ?Expense

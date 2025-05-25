@@ -6,6 +6,7 @@ namespace App\Controllers;
 
 use App\Domain\Service\ExpenseService;
 use DateTimeImmutable;
+use Exception;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Log\LoggerInterface;
@@ -122,7 +123,7 @@ class ExpenseController extends BaseController
             return $response->withStatus(403);
         }
         $categories = explode(',', $_ENV['EXPENSE_CATEGORIES']);
-         $this->logger->info('Logging array in context'.$expense->amountCents);
+        $this->logger->info('Logging array in context' . $expense->amountCents);
 
         return $this->render($response, 'expenses/edit.twig', ['data' => $expense, 'categories' => $categories]);
     }
@@ -138,7 +139,7 @@ class ExpenseController extends BaseController
         // - update the expense entity with the new values
         // - rerender the "expenses.edit" page with included errors in case of failure
         // - redirect to the "expenses.index" page in case of success
-        
+
         $expense = $this->expenseService->find((int)$routeParams['id']);
         //$this->logger->info('got in');
         $data = $request->getParsedBody();
@@ -204,6 +205,29 @@ class ExpenseController extends BaseController
 
 
         return $response->withHeader('Location', '/expenses')->withStatus(302);
-        
+    }
+
+    public function importCsv(Request $request, Response $response, array $args)
+    {   
+        $file = $request->getUploadedFiles();
+        if (!isset($file) || $file['csv']->getError() !== UPLOAD_ERR_OK) {
+            $_SESSION['message'] = 'Error uploading file.';
+            $_SESSION['message_type'] = 'error';
+            return $response->withHeader('Location', '/expenses')->withStatus(302);
+        }
+
+        $userId = $_SESSION['user_id'];
+        $csvFile = $file['csv'];
+
+        try {
+            $imported = $this->expenseService->importFromCsv($userId, $csvFile);
+            $_SESSION['message'] = "Imported $imported expenses successfully.";
+            $_SESSION['message_type'] = 'success';
+        } catch (Exception $e) {
+            $_SESSION['message'] = 'Import failed: ' . $e->getMessage();
+            $_SESSION['message_type'] = 'error';
+        }
+
+        return $response->withHeader('Location', '/expenses')->withStatus(302);
     }
 }

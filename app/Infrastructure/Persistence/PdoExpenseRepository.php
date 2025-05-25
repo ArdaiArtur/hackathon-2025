@@ -160,7 +160,7 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         }
 
         if (!$hasUpdates) {
-            return false;
+            return false; 
         }
 
         $query .= ' WHERE id = :id';
