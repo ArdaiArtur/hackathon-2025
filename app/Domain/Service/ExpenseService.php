@@ -9,30 +9,39 @@ use App\Domain\Entity\User;
 use App\Domain\Repository\ExpenseRepositoryInterface;
 use DateTimeImmutable;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Log\LoggerInterface;
 
 class ExpenseService
 {
     public function __construct(
         private readonly ExpenseRepositoryInterface $expenses,
+        private LoggerInterface $logger,
     ) {}
 
-    public function list(User $user, int $year, int $month, int $pageNumber, int $pageSize): array
+    public function list(int $userId, int $year, int $month, int $pageNumber, int $pageSize): array
     {
-        // TODO: implement this and call from controller to obtain paginated list of expenses
-        return [];
+        $criteria = [
+            'user_id' => $userId,
+            'year' => $year,
+            'month' => $month,
+        ];
+
+        $from = ($pageNumber - 1) * $pageSize;
+        $data=[
+            'years'=>$this->expenses->listExpenditureYears($userId),
+            'expenses'=>$this->expenses->findBy($criteria, $from, $pageSize),
+        ];
+        return $data;
     }
 
     public function create(
-        User $user,
+        int $userId,
         float $amount,
         string $description,
         DateTimeImmutable $date,
         string $category,
     ): void {
-        // TODO: implement this to create a new expense entity, perform validation, and persist
-
-        // TODO: here is a code sample to start with
-        $expense = new Expense(null, $user->id, $date, $category, (int)$amount, $description);
+        $expense = new Expense(null, $userId, $date, $category, (int)$amount, $description);
         $this->expenses->save($expense);
     }
 

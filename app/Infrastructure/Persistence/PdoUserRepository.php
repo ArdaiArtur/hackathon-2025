@@ -42,7 +42,7 @@ class PdoUserRepository implements UserRepositoryInterface
         $query = 'SELECT * FROM users WHERE username = :username';
         $statement = $this->pdo->prepare($query);
         $statement->execute(['username' => $username]);
-        $data = $statement->fetch(PDO::FETCH_ASSOC);
+        $data = $statement->fetch();
         if (false === $data) {
             return null;
         }
