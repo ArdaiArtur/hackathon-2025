@@ -94,14 +94,6 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         return $results;
     }
 
-
-
-    public function countBy(array $criteria): int
-    {
-        // TODO: Implement countBy() method.
-        return 0;
-    }
-
     public function listExpenditureYears(int $userId): array
     {
         $query = "SELECT  DISTINCT strftime('%Y', date) as year FROM expenses WHERE user_id = :user_id ORDER BY year DESC";

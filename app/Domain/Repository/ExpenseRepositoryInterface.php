@@ -20,8 +20,6 @@ interface ExpenseRepositoryInterface
 
     public function findBy(array $criteria, int $from, int $limit): array;
 
-    public function countBy(array $criteria): int;
-
     public function listExpenditureYears(int $userId): array;
 
     public function sumAmountsByCategory(array $criteria): array;
