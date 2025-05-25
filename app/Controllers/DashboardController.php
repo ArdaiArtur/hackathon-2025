@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Controllers;
 
+use App\Domain\Service\AlertGenerator;
+use App\Domain\Service\monthlyService;
 use App\Domain\Service\MonthlySummaryService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -14,8 +16,9 @@ class DashboardController extends BaseController
 {
     public function __construct(
         Twig $view,
-        private MonthlySummaryService $monthlySummaryService,
+        private MonthlySummaryService $monthlyService,
         private LoggerInterface $logger,
+        private AlertGenerator $alertGenerator,
     )
     {
         parent::__construct($view);
@@ -35,17 +38,18 @@ class DashboardController extends BaseController
         $year = (int)($request->getQueryParams()['year'] ?? (int)date('Y'));
         $month = (int)($request->getQueryParams()['month'] ?? (int)date('m'));
 
-        //$this->logger->info('Logging array in context'.$this->monthlySummaryService->computeTotalExpenditure($userId,$year,$month));
-        $totalForMonth=$this->monthlySummaryService->computeTotalExpenditure($userId,$year,$month);
-        $totalForCategories=$this->monthlySummaryService->computePerCategoryTotals($userId,$year,$month);
-        $averagesForCategories=$this->monthlySummaryService->computePerCategoryAverages($userId,$year,$month);
-        $this->logger->info('Logging array in context'.json_encode($averagesForCategories));
-        $getYears=$this->monthlySummaryService->getYears($userId);
+        //$this->logger->info('Logging array in context'.$this->monthlyService->computeTotalExpenditure($userId,$year,$month));
+        $totalForMonth=$this->monthlyService->computeTotalExpenditure($userId,$year,$month);
+        $totalForCategories=$this->monthlyService->computePerCategoryTotals($userId,$year,$month);
+        $avgForCategories=$this->monthlyService->computePerCategoryAverages($userId,$year,$month);
+       // $this->logger->info('Logging array in context'.json_encode($averagesForCategories));
+        $getYears=$this->monthlyService->getYears($userId);
+        $alerts= $this->alertGenerator->generate($userId, $year, $month);
         return $this->render($response, 'dashboard.twig', [
 
-            'alerts'                => [],
+            'alerts'                => $alerts,
             'totalForMonth'         =>  $totalForMonth,
-            'averagesForCategories' => $averagesForCategories,
+            'averagesForCategories' => $avgForCategories,
             'totalForCategories' => $totalForCategories,
             'year'     => $year,
             'month' => $month,

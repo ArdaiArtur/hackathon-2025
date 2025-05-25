@@ -81,8 +81,8 @@ class ExpenseService
 
 
         $imported = 0;
-
-        for ($i = 0; $i < count($lines); $i++) {
+        $lenght=count($lines);
+        for ($i = 0; $i < $lenght; $i++) {
 
             $row = str_getcsv($lines[$i]);
             $data = array_combine($columns, $row);

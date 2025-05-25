@@ -5,23 +5,45 @@ declare(strict_types=1);
 namespace App\Domain\Service;
 
 use App\Domain\Entity\User;
+use App\Domain\Repository\ExpenseRepositoryInterface;
+use Psr\Log\LoggerInterface;
 
 class AlertGenerator
 {
-    // TODO: refactor the array below and make categories and their budgets configurable in .env
-    // Hint: store them as JSON encoded in .env variable, inject them manually in a dedicated service,
-    // then inject and use use that service wherever you need category/budgets information.
-    private array $categoryBudgets = [
-        'Groceries' => 300.00,
-        'Utilities' => 200.00,
-        'Transport' => 500.00,
-        // ...
-    ];
-
-    public function generate(User $user, int $year, int $month): array
+    public function __construct(
+        private readonly ExpenseRepositoryInterface $expenses,
+        private LoggerInterface $logger,
+    ) {}
+    public function generate(int $userId, int $year, int $month): array
     {
-        // TODO: implement this to generate alerts for overspending by category
+        $totals = $this->expenses->sumAmountsByCategory(
+            [
+                "user_id" => $userId,
+                "year" => $year,
+                "month" => $month,
+            ]
+        );
+       // $this->logger->info('Logging array in context' . json_encode($total));
+        $alerts = [];
+        $json = $_ENV["BUGETS"] ?? "{}";
+        $budgets = json_decode($json, true) ?? [];
+        $this->logger->info('Logging array in context' . json_encode($budgets));
+        foreach ($totals as $total ) {
+           // $this->logger->info('Logging array in context' .$category.$entry['total']);
+            $cents = $total['total'];
+            $spentEuros = $cents / 100;
+            $normalizedCategory = strtolower((string)$total['category']);
+            $budget = $budgets[$normalizedCategory] ?? null;
 
-        return [];
+            if ($budget === null) {
+                continue;
+            }
+
+            if ($spentEuros > $budget) {
+                $over = $spentEuros - $budget;
+                $alerts[] = "Budget exceeded in category {$total['category']}: {$spentEuros} € spent out of {$budget} € allocated. You went over by {$over} €.";
+            }
+        }
+        return $alerts;
     }
 }
