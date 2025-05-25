@@ -46,6 +46,9 @@ class ExpenseController extends BaseController
 
         $this->logger->info('Logging array in context', $data);
 
+        $_SESSION['message'] = null;
+        $_SESSION['message_type'] = null;
+
         return $this->render($response, 'expenses/index.twig', [
             'data' => $data,
             'year'     => $year,
@@ -86,8 +89,8 @@ class ExpenseController extends BaseController
             $errors['amount'] = 'Must be a positive number.';
         }
 
-        $availableCategories = explode(',', $_ENV['EXPENSE_CATEGORIES']);
-        if (empty($category) || !in_array(ucfirst($category), $availableCategories)) {
+        $categories = explode(',', $_ENV['EXPENSE_CATEGORIES']);
+        if (empty($category) || !in_array(ucfirst($category), $categories)) {
             $errors['category'] = 'Invalid category.';
         }
 
@@ -95,11 +98,14 @@ class ExpenseController extends BaseController
             return $this->render($response, 'expenses/create.twig', [
                 'errors' => $errors,
                 'data' => $data,
-                'categories' => $availableCategories,
+                'categories' => $categories,
             ]);
         }
 
         $this->expenseService->create($userId, (float)$amount, $description, new DateTimeImmutable($date), $category);
+
+        $_SESSION['message'] = 'Expense created successfully.';
+        $_SESSION['message_type'] = 'success';
 
         return $response->withHeader('Location', '/expenses')->withStatus(302);
     }
@@ -132,6 +138,7 @@ class ExpenseController extends BaseController
         // - update the expense entity with the new values
         // - rerender the "expenses.edit" page with included errors in case of failure
         // - redirect to the "expenses.index" page in case of success
+        
         $expense = $this->expenseService->find((int)$routeParams['id']);
         //$this->logger->info('got in');
         $data = $request->getParsedBody();
@@ -139,7 +146,11 @@ class ExpenseController extends BaseController
         $date = trim($data['date'] ?? '');
         $amount = trim($data['amount'] ?? '');
         $category = trim($data['category'] ?? '');
-        $userId = $_SESSION['user_id'];
+
+        if ($expense->userId != $_SESSION['user_id']) {
+            $response->getBody()->write("Forbidden");
+            return $response->withStatus(403);
+        }
 
         $errors = [];
 
@@ -155,8 +166,8 @@ class ExpenseController extends BaseController
             $errors['amount'] = 'Must be a positive number.';
         }
 
-        $availableCategories = explode(',', $_ENV['EXPENSE_CATEGORIES']);
-        if (empty($category) || !in_array(ucfirst($category), $availableCategories)) {
+        $categories = explode(',', $_ENV['EXPENSE_CATEGORIES']);
+        if (empty($category) || !in_array(ucfirst($category), $categories)) {
             $errors['category'] = 'Invalid category.';
         }
 
@@ -164,24 +175,35 @@ class ExpenseController extends BaseController
             return $this->render($response, 'expenses/create.twig', [
                 'errors' => $errors,
                 'data' => $data,
-                'categories' => $availableCategories,
+                'categories' => $categories,
             ]);
         }
 
         $this->expenseService->update($expense, (float)$amount, $description, new DateTimeImmutable($date), $category);
+
+        $_SESSION['message'] = 'Expense Updated successfully.';
+        $_SESSION['message_type'] = 'success';
 
         return $response->withHeader('Location', '/expenses')->withStatus(302);
     }
 
     public function destroy(Request $request, Response $response, array $routeParams): Response
     {
-        // TODO: implement this action method to delete an existing expense
+        $expense = $this->expenseService->find((int)$routeParams['id']);
+        if (!$expense) {
+            return $response->withStatus(404);
+        }
+        if ($expense->userId != $_SESSION['user_id']) {
+            $response->getBody()->write("Forbidden");
+            return $response->withStatus(403);
+        }
 
-        // - load the expense to be edited by its ID (use route params to get it)
-        // - check that the logged-in user is the owner of the edited expense, and fail with 403 if not
-        // - call the repository method to delete the expense
-        // - redirect to the "expenses.index" page
+        $this->expenseService->delete($expense->id);
+        $_SESSION['message'] = 'Expense deleted successfully.';
+        $_SESSION['message_type'] = 'success';
 
-        return $response;
+
+        return $response->withHeader('Location', '/expenses')->withStatus(302);
+        
     }
 }

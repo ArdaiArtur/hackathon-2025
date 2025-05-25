@@ -79,8 +79,12 @@ class Kernel
                 
         // Make current user ID globally available to twig templates
         $loggedInUserId = $_SESSION['user_id'] ?? null;
+        $message = $_SESSION['message'] ?? null;
+        $messageType = $_SESSION['message_type'] ?? null;
         $twig = $container->get(Twig::class);
         $twig->getEnvironment()->addGlobal('currentUserId', $loggedInUserId);
+        $twig->getEnvironment()->addGlobal('message', $message);
+        $twig->getEnvironment()->addGlobal('messageType', $messageType);
 
         return $app;
     }
