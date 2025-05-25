@@ -86,7 +86,7 @@ class ExpenseService
 
             $row = str_getcsv($lines[$i]);
             $data = array_combine($columns, $row);
-            $this->create($userId, (float)$data['amount'], $data['description'], new DateTimeImmutable($data['date']), $data['category']);
+            $this->create($userId, (float)$data['amount'], $data['description'], new DateTimeImmutable($data['date']), strtolower($data['category']));
             $imported++;
         }
 

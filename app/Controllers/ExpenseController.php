@@ -43,13 +43,14 @@ class ExpenseController extends BaseController
         $pageSize = (int)($request->getQueryParams()['pageSize'] ?? self::PAGE_SIZE);
         $year = (int)($request->getQueryParams()['year'] ?? null);
         $month = (int)($request->getQueryParams()['month'] ?? null);
+
         $data = $this->expenseService->list($userId, $year, $month, $page, $pageSize);
 
-        $this->logger->info('Logging array in context', $data);
+        //$this->logger->info('Logging array in context', $data);
 
         $_SESSION['message'] = null;
         $_SESSION['message_type'] = null;
-
+        
         return $this->render($response, 'expenses/index.twig', [
             'data' => $data,
             'year'     => $year,

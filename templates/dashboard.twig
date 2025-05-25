@@ -20,25 +20,16 @@
         <form action="" method="get" class="mb-4 flex gap-4 items-center">
             {# TODO: remove mock data below, pass actual years having expenses from the controller #}
             <select name="year" class="bg-gray-700 text-gray-100 rounded px-3 py-2">
-                <option value="2013">2013</option>
-                <option value="2014">2014</option>
-                <option value="2015" selected>2015</option>
+                    {% for y in years %}
+                         <option value="{{ y.year }}" {{ year == y.year ? 'selected' : '' }}>{{ y.year }}</option>
+                    {% endfor %}
             </select>
 
             {# TODO: add the "selected" attribute to the current displayed month #}
             <select name="month" class="bg-gray-700 text-gray-100 rounded px-3 py-2">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3">3</option>
-                <option value="4">4</option>
-                <option value="5" selected>5</option>
-                <option value="6">6</option>
-                <option value="7">7</option>
-                <option value="8">8</option>
-                <option value="9">9</option>
-                <option value="10">10</option>
-                <option value="11">11</option>
-                <option value="12">12</option>
+                {% for m in 1..12 %}
+                    <option value="{{ m }}" {{ month == m ? 'selected' : '' }}>{{ m }}</option>
+                {% endfor %}
             </select>
             <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
                 Show summary
@@ -48,28 +39,23 @@
         <div class="mt-6">
             <h3 class="text-lg font-bold mb-2">Total expenditure</h3>
             <div class="bg-gray-800 rounded-lg p-6">
-                <div class="text-4xl font-bold text-green-400 mb-2">€2,459.32</div>
-                <div class="text-gray-400">for month 5 of year 2025</div>
+                <div class="text-4xl font-bold text-green-400 mb-2">{{ totalForMonth/ 100 | number_format(2) }}€</div>
+                <div class="text-gray-400">
+                    for month {{ month }}
+                    of year {{ year }}
+                </div>
             </div>
         </div>
 
         {% set colors = ['orange','lime','blue','amber','green','yellow','violet','emerald','purple','teal','fuchsia'] %}
-        {# TODO: replace the static data below with actual per-category totals passed from the controller #}
-        {% set totalsForCategories = {
-            'Groceries': {'value': 100, 'percentage': 10},
-            'Entertainment': {'value': 200, 'percentage': 20},
-            'Transport': {'value': 300, 'percentage': 30},
-            'Utilities': {'value': 400, 'percentage': 40}
-        } %}
-
         <div class="mt-6">
             <h3 class="text-lg font-bold mb-2">Per-category <strong>totals</strong> for month 5 of 2025</h3>
             <div class="space-y-4 mb-2">
-                {% for category,data in totalsForCategories %}
+                {% for category in averagesForCategories %}
                     <div class="relative">
                         <div class="bg-{{ colors[loop.index0 % colors|length] }}-600 h-8 rounded"
-                             style="width: {{ data.percentage }}%">
-                            <span class="absolute inset-0 flex items-center justify-start pl-4 text-white font-bold">{{ category }}: {{ data.value }} €</span>
+                              style="width: {{ (category.total / totalForMonth) * 100 }}%;">
+                            <span class="absolute inset-0 flex items-center justify-start pl-4 text-white font-bold">{{ category.category }}: {{ category.total/ 100 | number_format(2) }} €</span>
                         </div>
                     </div>
                 {% endfor %}

@@ -6,23 +6,39 @@ namespace App\Domain\Service;
 
 use App\Domain\Entity\User;
 use App\Domain\Repository\ExpenseRepositoryInterface;
+use Psr\Log\LoggerInterface;
 
 class MonthlySummaryService
 {
     public function __construct(
         private readonly ExpenseRepositoryInterface $expenses,
+        private LoggerInterface $logger,
     ) {}
 
-    public function computeTotalExpenditure(User $user, int $year, int $month): float
+    public function computeTotalExpenditure(int $userId, int $year = 0, int $month = 0): float
     {
-        // TODO: compute expenses total for year-month for a given user
-        return 0;
+       return $this->expenses->sumAmounts([
+            'user_id'=>$userId,
+            'year'=>$year,
+            'month'=>$month,
+    ]);
+       
     }
 
-    public function computePerCategoryTotals(User $user, int $year, int $month): array
+    public function getYears(int $userId, int $year = 0, int $month = 0): array
     {
-        // TODO: compute totals for year-month for a given user
-        return [];
+        
+       return $this->expenses->listExpenditureYears($userId);
+       
+    }
+
+    public function computePerCategoryTotals(int $userId, int $year, int $month): array
+    {
+       return $this->expenses->sumAmountsByCategory([
+            'user_id'=>$userId,
+            'year'=>$year,
+            'month'=>$month,
+    ]);
     }
 
     public function computePerCategoryAverages(User $user, int $year, int $month): array

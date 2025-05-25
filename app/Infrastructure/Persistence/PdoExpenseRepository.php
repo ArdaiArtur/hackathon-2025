@@ -68,13 +68,9 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
     public function findBy(array $criteria, int $from, int $limit): array
     {
-        $query = 'SELECT * FROM expenses where 1=1';
+        $query = 'SELECT * FROM expenses WHERE user_id = :userId';
         $params = [];
-
-        if (isset($criteria['user_id']) && $criteria['user_id'] != 0) {
-            $query .= ' AND user_id = :user_id';
-            $params['user_id'] = $criteria['user_id'];
-        }
+        $params['userId'] = $criteria['user_id'];
 
         if (isset($criteria['year']) && $criteria['year'] != 0) {
             $query .= " AND strftime('%Y', date) = :year";
@@ -120,8 +116,28 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
     public function sumAmountsByCategory(array $criteria): array
     {
-        // TODO: Implement sumAmountsByCategory() method.
-        return [];
+        $query = 'SELECT SUM(amount_cents) as total,category FROM expenses WHERE user_id = :userId';
+        $params = [];
+        $params['userId'] = $criteria['user_id'];
+
+        if (isset($criteria['year']) && $criteria['year'] != 0) {
+            $query .= " AND strftime('%Y', date) = :year";
+            $params['year'] = $criteria['year'];
+        }
+
+        if (isset($criteria['month']) && $criteria['month'] != 0) {
+            $query .= " AND strftime('%m', date) = :month";
+            $params['month'] = str_pad((string)$criteria['month'], 2, '0', STR_PAD_LEFT);
+        }
+
+        $query .= " GROUP BY category";
+        // $this->logger->info($query);
+        // $this->logger->info("params", $params);
+        $statement = $this->pdo->prepare($query);
+        $statement->execute($params);
+
+        $result = $statement->fetchAll();
+        return $result;
     }
 
     public function averageAmountsByCategory(array $criteria): array
@@ -132,8 +148,27 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
     public function sumAmounts(array $criteria): float
     {
-        // TODO: Implement sumAmounts() method.
-        return 0;
+        $query = 'SELECT SUM(amount_cents) as total FROM expenses WHERE user_id = :userId';
+        $params = [];
+        $params['userId'] = $criteria['user_id'];
+
+        if (isset($criteria['year']) && $criteria['year'] != 0) {
+            $query .= " AND strftime('%Y', date) = :year";
+            $params['year'] = $criteria['year'];
+        }
+
+        if (isset($criteria['month']) && $criteria['month'] != 0) {
+            $query .= " AND strftime('%m', date) = :month";
+            $params['month'] = str_pad((string)$criteria['month'], 2, '0', STR_PAD_LEFT);
+        }
+
+        // $this->logger->info($query);
+        // $this->logger->info("params", $params);
+        $statement = $this->pdo->prepare($query);
+        $statement->execute($params);
+
+        $result = $statement->fetch(PDO::FETCH_ASSOC);
+        return (float)($result['total'] ?? 0);
     }
 
     public function update(array  $expense, int $id): bool
