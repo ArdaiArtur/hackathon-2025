@@ -37,7 +37,8 @@ class DashboardController extends BaseController
 
         //$this->logger->info('Logging array in context'.$this->monthlySummaryService->computeTotalExpenditure($userId,$year,$month));
         $totalForMonth=$this->monthlySummaryService->computeTotalExpenditure($userId,$year,$month);
-        $averagesForCategories=$this->monthlySummaryService->computePerCategoryTotals($userId,$year,$month);
+        $totalForCategories=$this->monthlySummaryService->computePerCategoryTotals($userId,$year,$month);
+        $averagesForCategories=$this->monthlySummaryService->computePerCategoryAverages($userId,$year,$month);
         $this->logger->info('Logging array in context'.json_encode($averagesForCategories));
         $getYears=$this->monthlySummaryService->getYears($userId);
         return $this->render($response, 'dashboard.twig', [
@@ -45,6 +46,7 @@ class DashboardController extends BaseController
             'alerts'                => [],
             'totalForMonth'         =>  $totalForMonth,
             'averagesForCategories' => $averagesForCategories,
+            'totalForCategories' => $totalForCategories,
             'year'     => $year,
             'month' => $month,
             'years'=>$getYears,

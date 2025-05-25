@@ -51,7 +51,7 @@
         <div class="mt-6">
             <h3 class="text-lg font-bold mb-2">Per-category <strong>totals</strong> for month 5 of 2025</h3>
             <div class="space-y-4 mb-2">
-                {% for category in averagesForCategories %}
+                {% for category in totalForCategories %}
                     <div class="relative">
                         <div class="bg-{{ colors[loop.index0 % colors|length] }}-600 h-8 rounded"
                               style="width: {{ (category.total / totalForMonth) * 100 }}%;">
@@ -62,30 +62,18 @@
             </div>
         </div>
 
-        {# TODO: follow the example above and replicate the markup and twig logic for the averages below #}
+        {% set colors = ['orange','lime','blue','amber','green','yellow','violet','emerald','purple','teal','fuchsia'] %}
         <div class="mt-6">
             <h3 class="text-lg font-bold mb-2">Per-category <strong>averages</strong> for month 5 of 2025</h3>
             <div class="space-y-4 mb-2">
-                <div class="relative">
-                    <div class="bg-blue-600 h-8 rounded" style="width: 80%">
-                        <span class="absolute inset-0 flex items-center justify-start pl-4 text-white font-bold">Groceries: 50.10 €</span>
+                {% for category in averagesForCategories %}
+                    <div class="relative">
+                        <div class="bg-{{ colors[loop.index0 % colors|length] }}-600 h-8 rounded"
+                              style="width: {{ (category.total / totalForMonth) * 100 }}%;">
+                            <span class="absolute inset-0 flex items-center justify-start pl-4 text-white font-bold">{{ category.category }}: {{ category.total/ 100 | number_format(2) }} €</span>
+                        </div>
                     </div>
-                </div>
-                <div class="relative">
-                    <div class="bg-green-600 h-8 rounded" style="width: 60%">
-                        <span class="absolute inset-0 flex items-center justify-start pl-4 text-white font-bold">Utilities: 40.20 €</span>
-                    </div>
-                </div>
-                <div class="relative">
-                    <div class="bg-purple-600 h-8 rounded" style="width: 45%">
-                        <span class="absolute inset-0 flex items-center justify-start pl-4 text-white font-bold">Entertainment: 25.90 €</span>
-                    </div>
-                </div>
-                <div class="relative">
-                    <div class="bg-yellow-600 h-8 rounded" style="width: 35%">
-                        <span class="absolute inset-0 flex items-center justify-start pl-4 text-white font-bold">Transport: 75.50 €</span>
-                    </div>
-                </div>
+                {% endfor %}
             </div>
         </div>
     </section>

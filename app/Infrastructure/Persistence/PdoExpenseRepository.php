@@ -142,8 +142,28 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
     public function averageAmountsByCategory(array $criteria): array
     {
-        // TODO: Implement averageAmountsByCategory() method.
-        return [];
+        $query = 'SELECT AVG(amount_cents) as total,category FROM expenses WHERE user_id = :userId';
+        $params = [];
+        $params['userId'] = $criteria['user_id'];
+
+        if (isset($criteria['year']) && $criteria['year'] != 0) {
+            $query .= " AND strftime('%Y', date) = :year";
+            $params['year'] = $criteria['year'];
+        }
+
+        if (isset($criteria['month']) && $criteria['month'] != 0) {
+            $query .= " AND strftime('%m', date) = :month";
+            $params['month'] = str_pad((string)$criteria['month'], 2, '0', STR_PAD_LEFT);
+        }
+
+        $query .= " GROUP BY category";
+        // $this->logger->info($query);
+        // $this->logger->info("params", $params);
+        $statement = $this->pdo->prepare($query);
+        $statement->execute($params);
+
+        $result = $statement->fetchAll();
+        return $result;
     }
 
     public function sumAmounts(array $criteria): float

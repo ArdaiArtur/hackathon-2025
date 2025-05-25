@@ -41,9 +41,12 @@ class MonthlySummaryService
     ]);
     }
 
-    public function computePerCategoryAverages(User $user, int $year, int $month): array
+    public function computePerCategoryAverages(int $userId, int $year, int $month): array
     {
-        // TODO: compute averages for year-month for a given user
-        return [];
+         return $this->expenses->averageAmountsByCategory([
+            'user_id'=>$userId,
+            'year'=>$year,
+            'month'=>$month,
+    ]);
     }
 }
