@@ -31,4 +31,6 @@ interface ExpenseRepositoryInterface
     public function sumAmounts(array $criteria): float;
 
     public function update(array  $expense,int $id): bool;
+
+     public function countUsersExpens(int $userId): int;
 }

@@ -56,7 +56,7 @@ class ExpenseController extends BaseController
             'month' => $month,
             'page'     => $page,
             'pageSize' => $pageSize,
-            'total' => self::PAGE_SIZE,
+            'total'=>$this->expenseService->count($userId),
         ]);
     }
 

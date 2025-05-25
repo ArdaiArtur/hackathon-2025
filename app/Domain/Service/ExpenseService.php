@@ -98,6 +98,11 @@ class ExpenseService
         return $this->expenses->find($id);
     }
 
+    public function count(int $userId): int
+    {
+        return $this->expenses->countUsersExpens($userId);
+    }
+
     public function delete(int $id): void
     {
         $this->expenses->delete($id);

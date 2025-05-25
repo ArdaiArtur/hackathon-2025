@@ -34,6 +34,18 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
 
         return $this->createExpenseFromData($data);
     }
+    public function countUsersExpens(int $userId): int
+    {
+        $query = 'SELECT Count(*) as count FROM expenses WHERE user_id = :userId';
+        $statement = $this->pdo->prepare($query);
+        $statement->execute(['userId' => $userId]);
+        $data = $statement->fetch();
+        if (false === $data) {
+            return 0;
+        }
+
+        return $data['count'];
+    }
 
     public function save(Expense $expense): void
     {

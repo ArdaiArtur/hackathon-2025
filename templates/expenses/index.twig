@@ -102,7 +102,9 @@
         </table>
 
         {# Listing pagination #}
-        <div class="mt-1 flex justify-center">{{ data.expenses|length }} item(s)</div>
+        <div class="mt-1 flex justify-center">
+            {{(page-1)*pageSize }} to
+            {{ data.expenses|length+(page-1)*pageSize }} of {{ total }} item(s)</div>
         <div class="mt-1 flex justify-between">
             {% if total and page > 1 %}
                 <a href="/expenses?year={{ year }}&month={{ month }}&page={{ page - 1 }}"
