@@ -41,7 +41,7 @@ class ExpenseService
         DateTimeImmutable $date,
         string $category,
     ): void {
-        $expense = new Expense(null, $userId, $date, $category, (int)$amount, $description);
+        $expense = new Expense(null, $userId, $date, $category, (int)($amount*100), $description);
         $this->expenses->save($expense);
     }
 
@@ -54,8 +54,8 @@ class ExpenseService
     ): void {
         $fields = [];
 
-        if ($expense->amountCents !== (int)($amount)) {
-            $fields['amount_cents'] = (int)($amount);
+        if ($expense->amountCents !== (int)($amount * 100)) {
+            $fields['amount_cents'] = (int)($amount * 100);
         }
         if ($expense->description !== $description) {
             $fields['description'] = $description;
