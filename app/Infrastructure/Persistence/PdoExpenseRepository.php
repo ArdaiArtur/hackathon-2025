@@ -77,8 +77,8 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
         $query .= ' ORDER BY date DESC LIMIT :from, :limit';
         $params['limit'] = $limit;
         $params['from'] = $from;
-        $this->logger->info($query);
-        $this->logger->info("params", $params);
+        // $this->logger->info($query);
+        // $this->logger->info("params", $params);
         $statement = $this->pdo->prepare($query);
         $statement->execute($params);
 
@@ -122,6 +122,53 @@ class PdoExpenseRepository implements ExpenseRepositoryInterface
     {
         // TODO: Implement sumAmounts() method.
         return 0;
+    }
+
+    public function update(array  $expense, int $id): bool
+    {
+
+        $query = 'UPDATE expenses SET ';
+        $params = [];
+        $hasUpdates = false;
+
+        if (isset($expense['date'])) {
+            if ($hasUpdates) $query .= ', ';
+            $query .= 'date = :date';
+            $params['date'] = $expense['date'];
+            $hasUpdates = true;
+        }
+
+        if (isset($expense['category'])) {
+            if ($hasUpdates) $query .= ', ';
+            $query .= 'category = :category';
+            $params['category'] = $expense['category'];
+            $hasUpdates = true;
+        }
+
+        if (isset($expense['amount_cents'])) {
+            if ($hasUpdates) $query .= ', ';
+            $query .= 'amount_cents = :amount_cents';
+            $params['amount_cents'] = $expense['amount_cents'];
+            $hasUpdates = true;
+        }
+
+        if (isset($expense['description'])) {
+            if ($hasUpdates) $query .= ', ';
+            $query .= 'description = :description';
+            $params['description'] = $expense['description'];
+            $hasUpdates = true;
+        }
+
+        if (!$hasUpdates) {
+            return false;
+        }
+
+        $query .= ' WHERE id = :id';
+        $params['id'] = $id;
+
+        $statement = $this->pdo->prepare($query);
+
+        return $statement->execute($params);
     }
 
     /**

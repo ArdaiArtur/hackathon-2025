@@ -29,4 +29,6 @@ interface ExpenseRepositoryInterface
     public function averageAmountsByCategory(array $criteria): array;
 
     public function sumAmounts(array $criteria): float;
+
+    public function update(array  $expense,int $id): bool;
 }

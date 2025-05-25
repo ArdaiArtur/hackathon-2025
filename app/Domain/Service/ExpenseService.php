@@ -27,9 +27,9 @@ class ExpenseService
         ];
 
         $from = ($pageNumber - 1) * $pageSize;
-        $data=[
-            'years'=>$this->expenses->listExpenditureYears($userId),
-            'expenses'=>$this->expenses->findBy($criteria, $from, $pageSize),
+        $data = [
+            'years' => $this->expenses->listExpenditureYears($userId),
+            'expenses' => $this->expenses->findBy($criteria, $from, $pageSize),
         ];
         return $data;
     }
@@ -52,7 +52,24 @@ class ExpenseService
         DateTimeImmutable $date,
         string $category,
     ): void {
-        // TODO: implement this to update expense entity, perform validation, and persist
+        $fields = [];
+
+        if ($expense->amountCents !== (int)($amount)) {
+            $fields['amount_cents'] = (int)($amount);
+        }
+        if ($expense->description !== $description) {
+            $fields['description'] = $description;
+        }
+        if ($expense->date != $date) { 
+            $fields['date'] = $date->format('Y-m-d H:i:s');
+        }
+        if ($expense->category !== $category) {
+            $fields['category'] = $category;
+        }
+
+        if (!empty($fields)) {
+            $this->expenses->update( $fields,$expense->id,);
+        }
     }
 
     public function importFromCsv(User $user, UploadedFileInterface $csvFile): int
@@ -61,5 +78,10 @@ class ExpenseService
         // TODO: for extra points wrap the whole import in a transaction and rollback only in case writing to DB fails
 
         return 0; // number of imported rows
+    }
+
+    public function find(int $id): ?Expense
+    {
+        return $this->expenses->find($id);
     }
 }

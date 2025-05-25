@@ -43,7 +43,7 @@ class ExpenseController extends BaseController
         $year = (int)($request->getQueryParams()['year'] ?? null);
         $month = (int)($request->getQueryParams()['month'] ?? null);
         $data = $this->expenseService->list($userId, $year, $month, $page, $pageSize);
-         
+
         $this->logger->info('Logging array in context', $data);
 
         return $this->render($response, 'expenses/index.twig', [
@@ -52,7 +52,7 @@ class ExpenseController extends BaseController
             'month' => $month,
             'page'     => $page,
             'pageSize' => $pageSize,
-            'total'=>self::PAGE_SIZE,
+            'total' => self::PAGE_SIZE,
         ]);
     }
 
@@ -64,7 +64,7 @@ class ExpenseController extends BaseController
 
     public function store(Request $request, Response $response): Response
     {
-        $this->logger->info('got in');
+        //$this->logger->info('got in');
         $data = $request->getParsedBody();
         $description = trim($data['description'] ?? '');
         $date = trim($data['date'] ?? '');
@@ -107,16 +107,18 @@ class ExpenseController extends BaseController
 
     public function edit(Request $request, Response $response, array $routeParams): Response
     {
-        // TODO: implement this action method to display the edit expense page
+        $expense = $this->expenseService->find((int)$routeParams['id']);
+        if (!$expense) {
+            return $response->withStatus(404);
+        }
+        if ($expense->userId != $_SESSION['user_id']) {
+            $response->getBody()->write("Forbidden");
+            return $response->withStatus(403);
+        }
+        $categories = explode(',', $_ENV['EXPENSE_CATEGORIES']);
+         $this->logger->info('Logging array in context'.$expense->amountCents);
 
-        // Hints:
-        // - obtain the list of available categories from configuration and pass to the view
-        // - load the expense to be edited by its ID (use route params to get it)
-        // - check that the logged-in user is the owner of the edited expense, and fail with 403 if not
-
-        $expense = ['id' => 1];
-
-        return $this->render($response, 'expenses/edit.twig', ['expense' => $expense, 'categories' => []]);
+        return $this->render($response, 'expenses/edit.twig', ['data' => $expense, 'categories' => $categories]);
     }
 
     public function update(Request $request, Response $response, array $routeParams): Response
@@ -130,8 +132,45 @@ class ExpenseController extends BaseController
         // - update the expense entity with the new values
         // - rerender the "expenses.edit" page with included errors in case of failure
         // - redirect to the "expenses.index" page in case of success
+        $expense = $this->expenseService->find((int)$routeParams['id']);
+        //$this->logger->info('got in');
+        $data = $request->getParsedBody();
+        $description = trim($data['description'] ?? '');
+        $date = trim($data['date'] ?? '');
+        $amount = trim($data['amount'] ?? '');
+        $category = trim($data['category'] ?? '');
+        $userId = $_SESSION['user_id'];
 
-        return $response;
+        $errors = [];
+
+        if (empty($description)) {
+            $errors['description'] = 'Description is required.';
+        }
+
+        if (empty($date) || !strtotime($date)) {
+            $errors['date'] = 'Invalid date.';
+        }
+
+        if (!is_numeric($amount) || $amount <= 0) {
+            $errors['amount'] = 'Must be a positive number.';
+        }
+
+        $availableCategories = explode(',', $_ENV['EXPENSE_CATEGORIES']);
+        if (empty($category) || !in_array(ucfirst($category), $availableCategories)) {
+            $errors['category'] = 'Invalid category.';
+        }
+
+        if (!empty($errors)) {
+            return $this->render($response, 'expenses/create.twig', [
+                'errors' => $errors,
+                'data' => $data,
+                'categories' => $availableCategories,
+            ]);
+        }
+
+        $this->expenseService->update($expense, (float)$amount, $description, new DateTimeImmutable($date), $category);
+
+        return $response->withHeader('Location', '/expenses')->withStatus(302);
     }
 
     public function destroy(Request $request, Response $response, array $routeParams): Response
